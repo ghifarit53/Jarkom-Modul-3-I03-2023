@@ -59,10 +59,7 @@ $TTL    604800
 @       IN      A       10.60.3.1 ; Lawine's IP Address
 ```
 
-Restart the bind9 service
-```
-service bind9 restart
-```
+Then, restart the `bind9` service
 
 ## No. 1
 Topology
@@ -115,7 +112,57 @@ subnet 10.60.4.0 netmask 255.255.255.0 {
 }
 ```
 
+Then, restart `isc-dhcp-server`
+
+Then, we set up a DNS relay in node Aura so the DHCP server
+can distribute the IP to all the clients
+
+File: `/etc/default/isc-dhcp-relay`
+```conf
+# Defaults for isc-dhcp-relay initscript
+# sourced by /etc/init.d/isc-dhcp-relay
+# installed at /etc/default/isc-dhcp-relay by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# What servers should the DHCP relay forward requests to?
+SERVERS="10.60.1.1"
+
+# On what interfaces should the DHCP relay (dhrelay) serve DHCP requests?
+INTERFACES="eth1 eth2 eth3 eth4"
+
+# Additional options that are passed to the DHCP relay daemon?
+OPTIONS=""
+```
+
+Then restart the `isc-dhcp-relay`
+
 ## No. 4
+All the clients will get internet access from the DNS Server Heiter.
+First we set up a forwarder there. We already set the DNS server
+in `dhcpd.conf`, now we can set the configurations for DNS
+server to be able to forward internet connection
+
+File: `/etc/bind/named.conf.options`
+```sh
+options {
+	directory "/var/cache/bind";
+
+	forwarders {
+		192.168.122.1;
+	};
+
+	listen-on-v6 { any; };
+	allow-query{ any; };
+};
+```
+
+Then, restart `bind9` service. When we check
+the `/etc/resolv.conf` on each client node, they should
+point at Heiter's IP address
+
 ## No. 6
 ## No. 7
 ## No. 8
