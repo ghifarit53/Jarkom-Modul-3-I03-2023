@@ -212,6 +212,19 @@ using `ln -s`. The site should be up and running now. Do the same steps on the r
 <img width="436" alt="Screenshot 2023-11-18 at 21 23 30" src="https://user-images.githubusercontent.com/59758342/284004236-7a5c1c83-13d7-4eaf-bb3e-cc0dad67c4e3.png">
 
 ## No. 7
+
+To test the Eisen load balancer, we can use the benchmarking utilities provided by Apache. First, install the `apache2-utils` package
+
+```sh
+apt install apache2-utils
+```
+
+Then, to make 1000 request with 100 request/second, use the following command
+
+```sh
+ab -n 1000 -c 100 "http://10.60.2.2/"
+```
+
 ## No. 8
 ## No. 9
 ## No. 10
