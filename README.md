@@ -226,6 +226,62 @@ ab -n 1000 -c 100 "http://10.60.2.2/"
 ```
 
 ## No. 8
+
+We need to perform benchmarking using the various load balancing algorithm provided by `nginx`. First, we need to add all the algorithms into the nginx configuration in the load balancer
+
+File: `/etc/nginx/sites-available/loadbalancer`
+```conf
+upstream myweb {
+	# Round robin (default)
+	server 10.60.3.1; # IP Lawine
+	server 10.60.3.2; # IP Linie
+	server 10.60.3.3; # IP Lugner
+
+	# Weighted round robin
+	#server 10.60.3.1 weight=5; # IP Lawine
+	#server 10.60.3.2 weight=3; # IP Linie
+	#server 10.60.3.3 weight=1; # IP Lugner
+
+	# Least Connection
+	#least_conn;
+	#server 10.60.3.1; # IP Lawine
+	#server 10.60.3.2; # IP Linie
+	#server 10.60.3.3; # IP Lugner
+
+	# IP Hash
+	#ip_hash;
+	#server 10.60.3.1; # IP Lawine
+	#server 10.60.3.2; # IP Linie
+	#server 10.60.3.3; # IP Lugner
+
+	# Generic Hash
+	#hash $request_uri consistent;
+	#server 10.60.3.1; # IP Lawine
+	#server 10.60.3.2; # IP Linie
+	#server 10.60.3.3; # IP Lugner
+}
+
+server {
+	listen 80 default_server;
+	server_name _;
+
+	location / {
+		proxy_pass http://myweb;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header Host $http_host;
+	}
+}
+```
+
+Then, using the command `ab`, test the load balancer as follows
+
+```sh
+ab -n 200 -c 10 "http://10.60.2.2/"
+```
+
+Then, capture the CPU spike usage of each worker using `htop` and the result of the benchmark, then add it to the grimoire
+
 ## No. 9
 ## No. 10
 ## No. 11
