@@ -164,6 +164,53 @@ the `/etc/resolv.conf` on each client node, they should
 point at Heiter's IP address
 
 ## No. 6
+
+We need to install `wget` and `unzip` in order to download
+the website assets from Google Drive. And then `nginx`, `php`, and
+`php-fpm` to make the site online.
+
+```sh
+apt update
+apt install wget unzip nginx php php-fpm -y
+```
+
+Then, we download the zip file from Google Drive, unzip it, then
+move it to `/var/www` directory. Then, create a configuration file
+for the website, and put it in `/etc/nginx/sites-available/jarkom`
+
+File: `/etc/nginx/sites-available/jarkom`
+```conf
+server {
+        listen 80 default_server;
+        root /var/www/granz.channel.i03.com;
+
+        index index.php index.html index.htm;
+        server_name _;
+
+        location / {
+                try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        # pass PHP scripts to FastCGI server
+        location ~ \.php$ {
+                include snippets/fastcgi-php.conf;
+                fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+        }
+
+        location ~ /\.ht {
+                deny all;
+        }
+
+        error_log /var/log/nginx/jarkom_error.log;
+        access_log /var/log/nginx/jarkom_access.log;
+}
+```
+
+Then, make a symbolic link to the file in `/etc/nginx/sites-enabled/jarkom`
+using `ln -s`. The site should be up and running now. Do the same steps on the remaining workers
+
+<img width="436" alt="Screenshot 2023-11-18 at 21 23 30" src="https://user-images.githubusercontent.com/59758342/284004236-7a5c1c83-13d7-4eaf-bb3e-cc0dad67c4e3.png">
+
 ## No. 7
 ## No. 8
 ## No. 9
