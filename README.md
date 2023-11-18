@@ -10,7 +10,7 @@ We need to create riegel.canyon.i03.com that points to Laravel worker with IP 10
 and granz.channel.i03.com that points to PHP worker with IP 10.60.3.1. (Lawine)
 We can create the bind9 configuration in node Heiter
 
-File: `named.conf.local`
+File: `/etc/bind/named.conf.local`
 ```
 zone "riegel.canyon.i03.com" {
         type master;
@@ -23,7 +23,7 @@ zone "granz.channel.i03.com" {
 };
 ```
 
-File: `riegel.canyon.i03.com`
+File: `/etc/bind/jarkom/riegel.canyon.i03.com`
 ```
 ;
 ; riegel.canyon.i03.com
@@ -41,7 +41,7 @@ $TTL    604800
 @       IN      A       10.60.4.1 ; Frieren's IP Address
 ```
 
-File: `granz.channel.i03.com`
+File: `/etc/bind/jarkom/granz.channel.i03.com`
 ```
 ;
 ; granz.channel.i03.com
@@ -69,11 +69,53 @@ Topology
 
 <img width="798" alt="topology-i03" src="https://user-images.githubusercontent.com/59758342/283246078-d9c1be3b-921c-4d16-87a1-7c5ded059484.png">
 
+## No. 2, 3, and 5
+Clients that connects through Switch3, Revolte and Richter, get the suffix 3.16-3.32 and 3.64.
+Clients that connects through Switch4, Sein and Stark get the suffix 4.12-4.20 and 4.160-4.168.
 
-## No. 2
-## No. 3
+
+First, we need to install `isc-dhcp-server` in node Himmel.
+Then, put these configurations into their respective path
+
+We set the INTERFACESv4 to eth0 since we are connected through it
+
+File: `/etc/default/isc-dhcp-server`
+```conf
+# On what interfaces should the DHCP server (dhcpd) serve DHCP requests?
+#       Separate multiple interfaces with spaces, e.g. "eth0 eth1".
+INTERFACESv4="eth0"
+# INTERFACESv6=""
+```
+
+Then, we set the IP range, gateway, broadcast address,
+DNS server IP, and least time according to the requirements
+
+File: `/etc/dhcp/dhcpd.conf`
+```conf
+subnet 10.60.1.0 netmask 255.255.255.0 {}
+
+subnet 10.60.3.0 netmask 255.255.255.0 {
+    range 10.60.3.16 10.60.3.32;
+    range 10.60.3.64 10.60.3.80;
+    option routers 10.60.3.10;
+    option broadcast-address 10.60.3.255;
+    option domain-name-servers 10.60.1.2;
+    default-lease-time 180; # 3 Menit
+    max-lease-time 5760; # 96 Menit
+}
+
+subnet 10.60.4.0 netmask 255.255.255.0 {
+    range 10.60.4.12 10.60.4.20;
+    range 10.60.4.160 10.60.4.168;
+    option routers 10.60.4.10;
+    option broadcast-address 10.60.4.255;
+    option domain-name-servers 10.60.1.2;
+    default-lease-time 720; # 12 Menit
+    max-lease-time 5760; # 96 Menit
+}
+```
+
 ## No. 4
-## No. 5
 ## No. 6
 ## No. 7
 ## No. 8
