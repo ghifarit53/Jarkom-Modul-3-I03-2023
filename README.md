@@ -313,6 +313,7 @@ mv .htpasswd /etc/nginx/rahasiakita/.htpasswd
 
 Then, we need to add these lines to our nginx load balancer configuration
 
+File: `/etc/nginx/sites-available/loadbalancer`
 ```conf
 location / {
         auth_basic "Restricted Content";
@@ -327,4 +328,59 @@ lynx -auth=netics:ajki03 http://10.60.2.2/
 ```
 
 ## No. 11
+
+To solve number 11, we can add a new proxy to our load balancer configuration so that all request to `/its` will be redirected.
+
+File: `/etc/nginx/sites-available/loadbalancer`
+```conf
+location /its {
+        proxy_pass https://www.its.ac.id;
+}
+```
+
+Then restart the nginx service
+
 ## No. 12
+
+We need to make a whitelist that consist of the IP that can access the load balancer. To do that, we need to update our load balancer configuration
+
+File: `/etc/nginx/sites-available/loadbalancer`
+```conf
+location / {
+        # ... truncated configuration
+
+        allow 10.60.3.69;
+        allow 10.60.3.70;
+        allow 10.60.4.167;
+        allow 10.60.4.168;
+
+        deny all; # basically blocks all excepts the allowed above
+}
+```
+
+But our clients still have dynamic IPs, meaning once their IP got replaced with a new one from the DHCP server, they can no longer access load balancer. To do this, we need to lease them a permanent, fixed IP address. Go to Himmel node and update our `dhcpd.conf` with the following
+
+File: `/etc/dhcp/dhcpd.conf`
+```conf
+host Richter {
+    hardware ethernet 12:23:34:45:56:67;
+    fixed-address 10.60.3.69;
+}   
+    
+host Revolte {
+    hardware ethernet 12:34:56:78:9A:BC;
+    fixed-address 10.60.3.70;
+}
+
+host Sein {
+    hardware ethernet 1A:2B:3C:4D:5E:6F;
+    fixed-address 10.60.4.167;
+}
+
+host Stark {
+    hardware ethernet AA:BB:CC:DD:EE:FF;
+    fixed-address 10.60.4.168;
+}
+```
+
+This should make the IP of the client fixed, and therefore able to access our load balancer
