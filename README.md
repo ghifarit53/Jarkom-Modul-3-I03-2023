@@ -165,6 +165,8 @@ point at Heiter's IP address
 
 ## No. 6
 
+All the steps here needs to be performed in all PHP worker nodes
+
 We need to install `wget` and `unzip` in order to download
 the website assets from Google Drive. And then `nginx`, `php`, and
 `php-fpm` to make the site online.
@@ -207,7 +209,7 @@ server {
 ```
 
 Then, make a symbolic link to the file in `/etc/nginx/sites-enabled/jarkom`
-using `ln -s`. The site should be up and running now. Do the same steps on the remaining workers
+using `ln -s`. The site should be up and running now. Do the same steps on the remaining worker nodes
 
 <img width="436" alt="Screenshot 2023-11-18 at 21 23 30" src="https://user-images.githubusercontent.com/59758342/284004236-7a5c1c83-13d7-4eaf-bb3e-cc0dad67c4e3.png">
 
@@ -442,6 +444,107 @@ mariadb --host=10.60.2.1 --port=3306 --user=kelompoki03 --password
 It should bring you to the MariaDB console
 
 # No. 14
+
+All the steps here needs to be done in all Laravel workers. In this explanation, node Frieren with IP 10.60.4.1 will be used
+
+First, we need to install PHP 8.0, but we need to get some dependencies in advance. Install them using the following command
+
+```sh
+apt update
+apt install lsb-release ca-certificates apt-transport-https software-properties-common gnupg2 nginx-y
+```
+
+Then, we can install PHP 8.0 using the following command
+
+```sh
+curl https://packages.sury.org/php/README.txt | sh
+apt update
+apt-get install php8.0-mbstring php8.0-xml php8.0-cli php8.0-common php8.0-intl php8.0-opcache php8.0-readline php8.0-mysql php8.0-fpm php8.0-curl unzip wget -y
+```
+
+Then, we need to install composer to be able to deploy the laravel website
+
+```sh
+# Install composer
+wget -O /root/composer https://getcomposer.org/download/2.0.13/composer.phar
+chmod +x /root/composer
+mv /root/composer /usr/bin/composer
+```
+
+Next, we can clone the repository and install the required dependencies
+
+```sh
+git clone https://github.com/martuafernando/laravel-praktikum-jarkom
+cd laravel-praktikum-jarkom
+composer update
+```
+
+Make sure to update our .env file with the correct credentials to be able to connect to the MariaDB database
+
+File: `laravel-praktikum-jarkom/.env`
+```sh
+DB_CONNECTION=mysql
+DB_HOST=10.60.2.1
+DB_PORT=3306
+DB_DATABASE=dbkelompoki03
+DB_USERNAME=kelompoki03
+DB_PASSWORD=passwordi03
+```
+
+Run these commands to set everything for laravel
+
+```sh
+php artisan migrate:fresh
+php artisan db:seed --class=AiringsTableSeeder
+php artisan key:generate
+php artisan jwt:secret
+chown -R www-data.www-data /var/www/laravel-praktikum-jarkom/storage/
+```
+
+Then, we need to make our server configuration using nginx. Make the following file
+
+File: `/etc/nginx/sites-available/implementasi`
+```conf
+server {
+    listen 80;
+
+    root /var/www/laravel-praktikum-jarkom/public;
+
+    index index.php index.html index.htm;
+    server_name _;
+
+    location / {
+            try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # pass PHP scripts to FastCGI server
+    location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
+    }
+
+location ~ /\.ht {
+        deny all;
+    }
+
+    error_log /var/log/nginx/implementasi_error.log;
+    access_log /var/log/nginx/implementasi_access.log;
+}
+```
+
+Then make a symbolic link to the `sites-enabled` directory
+
+```sh
+ln -s /etc/nginx/sites-available/implementasi /etc/nginx/sites-enabled
+```
+
+Then start our nginx and php-fpm service
+
+```
+service nginx start
+service php8.0-fpm start
+```
+
 # No. 15
 # No. 16
 # No. 17
