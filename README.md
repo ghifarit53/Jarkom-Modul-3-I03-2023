@@ -384,3 +384,64 @@ host Stark {
 ```
 
 This should make the IP of the client fixed, and therefore able to access our load balancer
+
+# No. 13
+
+First, we need to install MariaDB in Denken
+
+```sh
+apt install mariadb-server -y
+```
+
+Then, start the `mysql` service
+
+```sh
+service mysql start
+```
+
+Then, enter the MariaDB console using the command `mysql`, and
+enter the following queries
+
+```sql
+CREATE USER 'kelompoki03'@'%' IDENTIFIED BY 'passwordi03';
+CREATE USER 'kelompoki03'@'localhost' IDENTIFIED BY 'passwordi03';
+CREATE DATABASE dbkelompoki03;
+GRANT ALL PRIVILEGES ON *.* TO 'kelompoki03'@'%';
+GRANT ALL PRIVILEGES ON *.* TO 'kelompoki03'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+Then, Add the following lines to the configuration in `/etc/mysql`. This is to make sure that other node can connect to and use this database server
+
+File: `/etc/mysql/my.cnf`
+```conf
+# ...
+
+[mysqld]
+skip-networking=0
+skip-bind-address
+```
+
+Restart mysql service
+
+```sh
+service mysql restart
+```
+
+To test the connection, install `mariadb-client` in any of the client in Switch4.
+
+```sh
+apt install mariadb-client -y
+```
+
+Connect using the following command
+```sh
+mariadb --host=10.60.2.1 --port=3306 --user=kelompoki03 --password
+```
+
+It should bring you to the MariaDB console
+
+# No. 14
+# No. 15
+# No. 16
+# No. 17
