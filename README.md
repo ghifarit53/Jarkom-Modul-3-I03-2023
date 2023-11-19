@@ -282,7 +282,49 @@ ab -n 200 -c 10 "http://10.60.2.2/"
 
 Then, capture the CPU spike usage of each worker using `htop` and the result of the benchmark, then add it to the grimoire
 
+Link to our group's [Grimoire](https://docs.google.com/document/d/1hWokptDIdO2z3M382Ec2-UeIwtB8ROInYjx4lt5w-A0/edit)
+
 ## No. 9
+
+To perform the benchmarking in this problem, we first need to set the load balancer configuration to use round robin. Then, we can execute the benchmarking with the following command.
+
+```sh
+ab -n 100 -c 10 http://10.60.2.2/
+```
+
+We first try with all the worker nodes running, then only two nodes, and finally one. Capture all the benchmark results and visualize it in a graph in the Grimoire
+
+Link to our group's [Grimoire](https://docs.google.com/document/d/1hWokptDIdO2z3M382Ec2-UeIwtB8ROInYjx4lt5w-A0/edit)
+
 ## No. 10
+
+We need to add authentication to our load balancer so that it can only be accessed if we can provide the correct credentials. We will need to set the credentials with `htpasswd`. If you already installed the `apache2-utils` package on your machine, you should have the command available
+
+```sh
+htpasswd -c .htpasswd netics
+```
+
+Then, enter your password for the user `netics`. In our case it would be `ajki03`. Then, move the password file `.htpasswd` to `/etc/nginx/rahasiakita/` directory
+
+```sh
+mkdir -p /etc/nginx/rahasiakita
+mv .htpasswd /etc/nginx/rahasiakita/.htpasswd
+```
+
+Then, we need to add these lines to our nginx load balancer configuration
+
+```conf
+location / {
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/rahasiakita/.htpasswd;
+}
+```
+
+It should work successfully. If we didn't provide the correct credentials when opening the website using `lynx`, we will not get access into the website. Here's how to get into the website using our credentials
+
+```sh
+lynx -auth=netics:ajki03 http://10.60.2.2/
+```
+
 ## No. 11
 ## No. 12
