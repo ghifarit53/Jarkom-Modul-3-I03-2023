@@ -546,5 +546,66 @@ service php8.0-fpm start
 ```
 
 # No. 15
+We need to perform testing on the /api/auth/register endpoint. To initiate this, it's necessary to configure the JSON file first.
+
+File: `no-15.json`
+```json
+{
+    "username": "user",
+    "password": "password"
+}
+```
+
+Then, we send a POST request to the website using `curl`:
+
+```sh
+curl -X POST -H "Content-Type: application/json" -d @no-15.json http://10.60.4.1/api/auth/register
+```
+
+The response to the curl request is displayed below:
+
+<img width="674" alt="Screenshot 2023-11-19 at 18 58 02" src="https://user-images.githubusercontent.com/59758342/284055906-99f5e36f-48bb-479b-ad5e-9f9469378c06.png">
+
+Following that, we conduct tests using `ab` with the execution of the following command:
+
+```
+ab -p no-15.json -T application/json -n 100 -c 10 http://10.60.4.1/api/auth/register/
+```
+
+Below is the result of the benchmark
+
+<img width="701" alt="Screenshot 2023-11-19 at 18 11 29" src="https://user-images.githubusercontent.com/59758342/284055901-54067db1-54c5-477b-9991-bc60dd7a9ec1.png">
+
+We can see that out of 100 request, 39 were failed
+
 # No. 16
+We will now conduct testing on the /api/auth/login endpoint, utilizing the same JSON data as in number 15.
+
+File: `no-15.json`
+```json
+{
+    "username": "user",
+    "password": "password"
+}
+```
+
+To retrieve the response, we employ `curl` as follows:
+
+```sh
+curl -X POST -H "Content-Type: application/json" -d @no-15.json http://10.60.4.1/api/auth/login
+```
+
+The response is illustrated below:
+
+<img width="748" alt="Screenshot 2023-11-19 at 19 16 33" src="https://user-images.githubusercontent.com/59758342/284056487-745503f1-7744-4971-bd09-ce753749f6b9.png">
+
+Then, perform benchmarking using `ab`
+
+```sh
+ab -p no-15.json -T application/json -n 100 -c 10 http://10.60.4.1/api/auth/login/
+```
+
+The benchmark results are presented below:
+
+<img width="675" alt="Screenshot 2023-11-19 at 19 19 13" src="https://user-images.githubusercontent.com/59758342/284056620-1271043f-a296-41a7-a6f4-fd6203f30b14.png">
 # No. 17
