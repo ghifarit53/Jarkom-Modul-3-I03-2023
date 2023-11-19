@@ -545,8 +545,15 @@ service nginx start
 service php8.0-fpm start
 ```
 
+Test using lynx to see if it's working
+
+```sh
+lynx 10.60.4.1
+```
+
 # No. 15
-We need to perform testing on the /api/auth/register endpoint. To initiate this, it's necessary to configure the JSON file first.
+
+We need to test the `/api/auth/register` endpoint. To do this, we need to set the JSON file first
 
 File: `no-15.json`
 ```json
@@ -556,17 +563,17 @@ File: `no-15.json`
 }
 ```
 
-Then, we send a POST request to the website using `curl`:
+Then, we make a request using POST method to the website using `curl`
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d @no-15.json http://10.60.4.1/api/auth/register
 ```
 
-The response to the curl request is displayed below:
+And below is the response to the curl request
 
 <img width="674" alt="Screenshot 2023-11-19 at 18 58 02" src="https://user-images.githubusercontent.com/59758342/284055906-99f5e36f-48bb-479b-ad5e-9f9469378c06.png">
 
-Following that, we conduct tests using `ab` with the execution of the following command:
+Next, we will test using `ab`. Execute the following command
 
 ```
 ab -p no-15.json -T application/json -n 100 -c 10 http://10.60.4.1/api/auth/register/
@@ -579,7 +586,8 @@ Below is the result of the benchmark
 We can see that out of 100 request, 39 were failed
 
 # No. 16
-We will now conduct testing on the /api/auth/login endpoint, utilizing the same JSON data as in number 15.
+
+We will test the `/api/auth/login` endpoint. We can use the same JSON as number 15
 
 File: `no-15.json`
 ```json
@@ -589,13 +597,13 @@ File: `no-15.json`
 }
 ```
 
-To retrieve the response, we employ `curl` as follows:
+Then, using curl to get the response
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d @no-15.json http://10.60.4.1/api/auth/login
 ```
 
-The response is illustrated below:
+The response will be something like the following
 
 <img width="748" alt="Screenshot 2023-11-19 at 19 16 33" src="https://user-images.githubusercontent.com/59758342/284056487-745503f1-7744-4971-bd09-ce753749f6b9.png">
 
@@ -605,7 +613,34 @@ Then, perform benchmarking using `ab`
 ab -p no-15.json -T application/json -n 100 -c 10 http://10.60.4.1/api/auth/login/
 ```
 
-The benchmark results are presented below:
+Below is the result
 
 <img width="675" alt="Screenshot 2023-11-19 at 19 19 13" src="https://user-images.githubusercontent.com/59758342/284056620-1271043f-a296-41a7-a6f4-fd6203f30b14.png">
+
 # No. 17
+
+Next, we're going to test the `/api/me` endpoint. Store he bearer token that we obtained from the previous call to `/api/auth/login` in a variable, then use it in our curl call
+
+```sh
+token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTAuNjAuNC4xL2FwaS9hdXRoL2xvZ2luIiwiaWF0IjoxNzAwMzk3MDE0LCJleHAiOjE3MDA0MDA2MTQsIm5iZiI6MTcwMDM5NzAxNCwianRpIjoiQjlnd2dpNm54S0ZEaFdtOCIsInN1YiI6IjIiLCJwcnYiOiIyM2JkNWM4OTQ5ZjYwMGFkYjM5ZTcwMWM0MDA4NzJkYjdhNTk3NmY3In0.Jfj7T-T60evRE2nmtCyu2u9z1t5LUZibx5gtOmtaBbQ"
+
+curl -H "Authorization: Bearer $token" 10.60.4.1/api/me
+```
+
+The response will be something like this
+
+<img width="743" alt="Screenshot 2023-11-19 at 19 35 52" src="https://user-images.githubusercontent.com/59758342/284057623-afe86506-6231-4fa6-bd30-d4799cfdda04.png">
+
+Then, use the following `ab` command to perform benchmarking to `/api/me`
+
+```
+token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTAuNjAuNC4xL2FwaS9hdXRoL2xvZ2luIiwiaWF0IjoxNzAwMzk3MDE0LCJleHAiOjE3MDA0MDA2MTQsIm5iZiI6MTcwMDM5NzAxNCwianRpIjoiQjlnd2dpNm54S0ZEaFdtOCIsInN1YiI6IjIiLCJwcnYiOiIyM2JkNWM4OTQ5ZjYwMGFkYjM5ZTcwMWM0MDA4NzJkYjdhNTk3NmY3In0.Jfj7T-T60evRE2nmtCyu2u9z1t5LUZibx5gtOmtaBbQ"
+
+ab -n 100 -c 10 -H "Authorization: Bearer $token" http://10.60.4.1/api/me
+```
+
+Here's the htop usage and benchmark result
+
+<img width="782" alt="Screenshot 2023-11-19 at 19 39 35" src="https://user-images.githubusercontent.com/59758342/284057928-cd2749bb-b5a2-4a1b-a9c7-f3c97f69f01f.png">
+
+<img width="676" alt="Screenshot 2023-11-19 at 19 39 57" src="https://user-images.githubusercontent.com/59758342/284057863-b24a3fb7-acc9-4b10-b3ce-f036c2128e38.png">
